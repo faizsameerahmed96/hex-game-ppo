@@ -6,7 +6,9 @@
 - [x] Create a basic PPO example for dumb agent.
 - [x] Add rendering after every some time
 - [x] Only use full episodes
-- [ ] Create a system for saving
+- [x] Create a system for saving
+- [x] Check if player 2 works fine
+- [ ] Create a double learning agent
 - [ ] Add graphs of performance
 
 

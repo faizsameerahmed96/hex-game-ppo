@@ -18,7 +18,7 @@ class PPO:
         self,
         policy_class,
         env: OurHexGame,
-        current_agent_player="player_1",
+        current_agent_player="player_2",
         **hyperparameters,
     ):
         """
@@ -415,9 +415,6 @@ class PPO:
         Return:
                 None
         """
-        # Calculate logging values. I use a few python shortcuts to calculate each value
-        # without explaining since it's not too important to PPO; feel free to look it over,
-        # and if you have any questions you can email me (look at bottom of README)
         delta_t = self.logger["delta_t"]
         self.logger["delta_t"] = time.time_ns()
         delta_t = (self.logger["delta_t"] - delta_t) / 1e9
@@ -433,12 +430,10 @@ class PPO:
             [losses.float().mean() for losses in self.logger["actor_losses"]]
         )
 
-        # Round decimal places for more aesthetic logging messages
         avg_ep_lens = str(round(avg_ep_lens, 2))
         avg_ep_rews = str(round(avg_ep_rews, 2))
         avg_actor_loss = str(round(avg_actor_loss, 5))
 
-        # Print logging statements
         print(flush=True)
         print(
             f"-------------------- Iteration #{i_so_far} --------------------",
