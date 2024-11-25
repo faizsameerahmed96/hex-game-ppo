@@ -8,7 +8,8 @@
 - [x] Only use full episodes
 - [x] Create a system for saving
 - [x] Check if player 2 works fine
-- [ ] Create a double learning agent
+- [x] Create a double learning agent
+- [ ] Resume Learning every time
 - [ ] Add graphs of performance
 
 

@@ -45,7 +45,8 @@ class PPO:
         self.clip = hyperparameters.get("clip", 0.2)
         self.render = hyperparameters.get("render", True)
         self.render_every_i = hyperparameters.get("render_every_i", 10)
-        self.save_freq = hyperparameters.get("save_freq", 1)
+        self.save_freq = hyperparameters.get("save_freq", 10)
+        self.break_after_x_win_percent = hyperparameters.get("break_after_x_win_percent", 95)
         self.seed = hyperparameters.get("seed", None)
 
         if self.seed != None:
@@ -66,6 +67,10 @@ class PPO:
         # To estimate the value function (V_phi)
         self.critic = policy_class(env.board_size, 1)
 
+        # The opponent actor we want to fight
+        self.opponent_actor = policy_class(env.board_size, self.act_dim)
+        self.load_opponent_model()
+
         # Initialize optimizers for actor and critic
         self.actor_optim = Adam(self.actor.parameters(), lr=self.lr)
         self.critic_optim = Adam(self.critic.parameters(), lr=self.lr)
@@ -79,6 +84,22 @@ class PPO:
             "batch_rews": [],  # episodic returns in batch
             "actor_losses": [],  # losses of actor network in current iteration
         }
+
+    def load_opponent_model(self):
+        path = f"./checkpoints/{self.other_agent_player}/actor/"
+
+        if not os.path.exists(path):
+            print("No opponent model found")
+            return
+        
+        # Get the most recent model
+        files = os.listdir(path)
+        files.sort()
+        file = files[-1]
+
+        print(f"Loading opponent model: {file}")
+
+        self.opponent_actor.load_state_dict(torch.load(f"./checkpoints/{self.other_agent_player}/actor/{file}"))
 
     def transform_observation(self, obs):
         """
@@ -175,14 +196,22 @@ class PPO:
 
             # Save our model if it's time
             if iterations_so_far % self.save_freq == 0 and iterations_so_far != 0:
-                current_time = time.time()
+                self.save_model()
 
-                # make sure the directories exist
-                os.makedirs(f"./checkpoints/{self.current_agent_player}/actor/", exist_ok=True)
-                os.makedirs(f"./checkpoints/{self.current_agent_player}/critic/", exist_ok=True)
+            if self.wins_queue.queue.count(1) * 100 / self.wins_queue.qsize() > self.break_after_x_win_percent:
+                self.save_model()
+                return
 
-                torch.save(self.actor.state_dict(), f"./checkpoints/{self.current_agent_player}/actor/{current_time}.pth")
-                torch.save(self.critic.state_dict(), f"./checkpoints/{self.current_agent_player}/critic/{current_time}.pth")
+    def save_model(self):
+        current_time = time.time()
+
+        # make sure the directories exist
+        os.makedirs(f"./checkpoints/{self.current_agent_player}/actor/", exist_ok=True)
+        os.makedirs(f"./checkpoints/{self.current_agent_player}/critic/", exist_ok=True)
+
+        torch.save(self.actor.state_dict(), f"./checkpoints/{self.current_agent_player}/actor/{current_time}.pth")
+        torch.save(self.critic.state_dict(), f"./checkpoints/{self.current_agent_player}/critic/{current_time}.pth")
+
 
     def collect_trajectories(self):
         """
@@ -240,15 +269,16 @@ class PPO:
 
                 # If we are not playing as the agent, we want to play randomly
                 if self.env.agent_selection != self.current_agent_player:
+                    action = self.get_action(observation, self.opponent_actor)[0]
                     # We want to play randomly
-                    zero_indexes = [
-                        (i, j)
-                        for i in range(len(observation["observation"]))
-                        for j in range(len(observation["observation"][i]))
-                        if observation["observation"][i][j] == 0
-                    ]
-                    row, col = random.choice(zero_indexes)
-                    action = row * self.env.board_size + col
+                    # zero_indexes = [
+                    #     (i, j)
+                    #     for i in range(len(observation["observation"]))
+                    #     for j in range(len(observation["observation"][i]))
+                    #     if observation["observation"][i][j] == 0
+                    # ]
+                    # row, col = random.choice(zero_indexes)
+                    # action = row * self.env.board_size + col
                     self.env.step(action)
                     continue
 
@@ -259,7 +289,7 @@ class PPO:
 
                 # Calculate action and make a step in the env.
                 # Note that rew is short for reward.
-                action, log_prob = self.get_action(observation)
+                action, log_prob = self.get_action(observation, self.actor)
                 self.env.step(action)
                 observation = self.env.observe(self.current_agent_player)
                 rew = self.env.rewards[self.current_agent_player]
@@ -328,7 +358,7 @@ class PPO:
 
         return batch_rtgs
 
-    def get_action(self, obs):
+    def get_action(self, obs, model):
         """
         Queries an action from the actor network, should be called from rollout.
 
@@ -339,7 +369,7 @@ class PPO:
                 action - the action to take, as a numpy array
                 log_prob - the log probability of the selected action in the distribution
         """
-        logits = self.actor(
+        logits = model(
             torch.tensor(
                 np.expand_dims(self.transform_observation(obs).numpy(), axis=0)
             )
@@ -439,6 +469,7 @@ class PPO:
             f"-------------------- Iteration #{i_so_far} --------------------",
             flush=True,
         )
+        print(f"PLAYER: {self.current_agent_player}", flush=True)
         print(f"Average Episodic Length: {avg_ep_lens}", flush=True)
         print(f"Average Episodic Return: {avg_ep_rews}", flush=True)
         print(f"Average Loss: {avg_actor_loss}", flush=True)
