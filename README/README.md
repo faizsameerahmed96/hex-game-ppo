@@ -9,7 +9,9 @@
 - [x] Create a system for saving
 - [x] Check if player 2 works fine
 - [x] Create a double learning agent
-- [ ] Resume Learning every time
+- [ ] Resume Learning every time (along with which model was training last)
+- [ ] Evaluate a specific model against the other
+- [ ] Add render slo-mo
 - [ ] Add graphs of performance
 
 
@@ -22,6 +24,10 @@
  We may need to join these networks in some way if only one agent is allowed.
 
 TO ADD
+
+
+## Journal
+- Initially, both agents learn on random. However while dueling the agent seems to stop becoming better and settles around the 0-10% mark
 
 
 ## Scratch Notes

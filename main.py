@@ -17,22 +17,39 @@ from ppo import PPO
 
 def main():
     hyperparameters = {
-        "episodes_per_batch": 100,
+        "episodes_per_batch": 10,
         "timesteps_per_batch": 2048,
         "max_timesteps_per_episode": 300,
         "gamma": 0.6,
-        "n_updates_per_iteration": 10,
+        "n_updates_per_iteration": 20,
         "lr": 3e-4,
         "clip": 0.2,
+        "save_freq": 200,
         "render": False,
         "render_every_i": 10,
         "break_after_x_win_percent": 80,
+        'train_against_opponent': False
     }
 
     env = OurHexGame(board_size=11, render_mode="human", sparse_flag=False)
 
     player_1_model = PPO(policy_class=PolicyValueNetwork, env=env, **{**hyperparameters, 'current_agent_player': 'player_1'})
     player_2_model = PPO(policy_class=PolicyValueNetwork, env=env, **{**hyperparameters, 'current_agent_player': 'player_2'})
+
+    # First generalize both models on their own before starting the duel training loop
+    print("Training for general information")
+    player_1_model.learn(total_timesteps=-1)
+    player_2_model.learn(total_timesteps=-1)
+
+
+    print("Dueling training start")
+    # Duel training loop
+    player_1_model.train_against_opponent = True
+    player_2_model.train_against_opponent = True
+    player_1_model.load_opponent_model()
+    player_2_model.load_opponent_model()
+    player_1_model.break_after_x_win_percent = 80
+    player_2_model.break_after_x_win_percent = 80
 
     while True:
         player_1_model.learn(total_timesteps=-1)

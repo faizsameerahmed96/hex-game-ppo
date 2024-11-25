@@ -33,6 +33,8 @@ class PPO:
         Returns:
                 None
         """
+        self.entropy_coef = 0.01
+
 
         self.timesteps_per_batch = hyperparameters.get("timesteps_per_batch", 4800)
         self.episodes_per_batch = hyperparameters.get("episodes_per_batch", 10)
@@ -48,6 +50,7 @@ class PPO:
         self.save_freq = hyperparameters.get("save_freq", 10)
         self.break_after_x_win_percent = hyperparameters.get("break_after_x_win_percent", 95)
         self.seed = hyperparameters.get("seed", None)
+        self.train_against_opponent = hyperparameters.get("train_against_opponent", False)
 
         if self.seed != None:
             torch.manual_seed(self.seed)
@@ -69,6 +72,7 @@ class PPO:
 
         # The opponent actor we want to fight
         self.opponent_actor = policy_class(env.board_size, self.act_dim)
+        self.opponent_actor.eval()
         self.load_opponent_model()
 
         # Initialize optimizers for actor and critic
@@ -144,7 +148,7 @@ class PPO:
             self.logger["i_so_far"] = iterations_so_far
 
             # Calculate advantage at k-th iteration
-            V, _ = self.evaluate(batch_obs, batch_acts)
+            V, _, _ = self.evaluate(batch_obs, batch_acts)
             A_k = batch_rtgs - V.detach()  # ALG STEP 5
 
             # One of the only tricks I use that isn't in the pseudocode. Normalizing advantages
@@ -156,7 +160,7 @@ class PPO:
             # This is the loop where we update our network for some n epochs
             for _ in range(self.n_updates_per_iteration):  # ALG STEP 6 & 7
                 # Calculate V_phi and pi_theta(a_t | s_t)
-                V, curr_log_probs = self.evaluate(batch_obs, batch_acts)
+                V, curr_log_probs, entropy = self.evaluate(batch_obs, batch_acts)
 
                 # Calculate the ratio pi_theta(a_t | s_t) / pi_theta_k(a_t | s_t)
                 # NOTE: we just subtract the logs, which is the same as
@@ -175,7 +179,7 @@ class PPO:
                 # NOTE: we take the negative min of the surrogate losses because we're trying to maximize
                 # the performance function, but Adam minimizes the loss. So minimizing the negative
                 # performance function maximizes it.
-                actor_loss = (-torch.min(surr1, surr2)).mean()
+                actor_loss = (-torch.min(surr1, surr2)).mean() - self.entropy_coef * entropy
                 critic_loss = nn.MSELoss()(V, batch_rtgs)
 
                 # Calculate gradients and perform backward propagation for actor network
@@ -241,7 +245,7 @@ class PPO:
         t = 0  # Keeps track of how many timesteps we've run so far this batch
 
         should_render = False
-        if self.logger["i_so_far"] % 2 == 0:
+        if self.logger["i_so_far"] % 2 == 0 and self.render:
             should_render = True
 
         # Keep simulating until we've run more than or equal to specified timesteps per batch
@@ -269,16 +273,20 @@ class PPO:
 
                 # If we are not playing as the agent, we want to play randomly
                 if self.env.agent_selection != self.current_agent_player:
-                    action = self.get_action(observation, self.opponent_actor)[0]
-                    # We want to play randomly
-                    # zero_indexes = [
-                    #     (i, j)
-                    #     for i in range(len(observation["observation"]))
-                    #     for j in range(len(observation["observation"][i]))
-                    #     if observation["observation"][i][j] == 0
-                    # ]
-                    # row, col = random.choice(zero_indexes)
-                    # action = row * self.env.board_size + col
+                    if self.train_against_opponent:
+                        action = self.get_action(observation, self.opponent_actor)[0]
+                    else:
+                        # We want to play randomly
+                        zero_indexes = [
+                            (i, j)
+                            for i in range(len(observation["observation"]))
+                            for j in range(len(observation["observation"][i]))
+                            if observation["observation"][i][j] == 0
+                        ]
+                        row, col = random.choice(zero_indexes)
+                        action = row * self.env.board_size + col
+
+                    
                     self.env.step(action)
                     continue
 
@@ -428,12 +436,14 @@ class PPO:
         # Convert logits to action probabilities
         action_probs = F.softmax(logits, dim=-1)
 
+        entropy = -(action_probs * torch.log(action_probs + 1e-10)).sum(dim=-1).mean()
+
         # Calculate log probabilities of the taken actions
         log_probs = torch.log(
             action_probs[torch.arange(len(batch_acts)), batch_acts.long()]
         )
 
-        return V, log_probs
+        return V, log_probs, entropy
 
     def _log_summary(self):
         """

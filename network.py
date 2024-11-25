@@ -8,11 +8,13 @@ class PolicyValueNetwork(nn.Module):
     def __init__(self, board_size, output_dim):
         super(PolicyValueNetwork, self).__init__()
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=board_size),  # For a 2x2 board, kernel_size can be 2
+            nn.Conv2d(3, 128, kernel_size=board_size),  # For a 2x2 board, kernel_size can be 2
             nn.ReLU(),
         )
         self.fc_layers = nn.Sequential(
-            nn.Linear(32 * 1 * 1, pow(board_size, 3)),
+            nn.Linear(128, pow(board_size, 3)),
+            nn.ReLU(),
+            nn.Linear(pow(board_size, 3), pow(board_size, 3)),
             nn.ReLU(),
             nn.Linear(pow(board_size, 3), pow(board_size, 3)),
             nn.ReLU(),
