@@ -9,6 +9,10 @@
 - [x] Create a system for saving
 - [x] Check if player 2 works fine
 - [x] Create a double learning agent
+- [ ] Make it more resumable, ability to start with player_2 training if player 1 was the last trained
+- [ ] Ability to define custom network for training against
+- [ ] Common strategies win/lose
+- [ ] Delete older agents every time we save
 - [ ] Resume Learning every time (along with which model was training last)
 - [ ] Evaluate a specific model against the other
 - [ ] Add render slo-mo
@@ -34,3 +38,5 @@ TO ADD
 - A higher learning rate prioritizes future learning. Explore.
 - Analyze how PPO and DQN play as that will be the most common strategies.
 - Investigate when pie rule is more effective
+- Create a distribution map of where the actions where chosen mainly in the last map
+- Adaptive temperature based on win %
