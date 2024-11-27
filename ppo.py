@@ -33,14 +33,12 @@ class PPO:
         Returns:
                 None
         """
-        self.entropy_coef = 0.01
-
-
         self.timesteps_per_batch = hyperparameters.get("timesteps_per_batch", 4800)
         self.episodes_per_batch = hyperparameters.get("episodes_per_batch", 10)
         self.max_timesteps_per_episode = hyperparameters.get(
             "max_timesteps_per_episode", 1600
         )
+        self.render_every_x_iterations = hyperparameters.get("render_every_x_iterations", 5)
         self.n_updates_per_iteration = hyperparameters.get("n_updates_per_iteration", 5)
         self.lr = hyperparameters.get("lr", 0.005)
         self.gamma = hyperparameters.get("gamma", 0.95)
@@ -179,7 +177,7 @@ class PPO:
                 # NOTE: we take the negative min of the surrogate losses because we're trying to maximize
                 # the performance function, but Adam minimizes the loss. So minimizing the negative
                 # performance function maximizes it.
-                actor_loss = (-torch.min(surr1, surr2)).mean() - self.entropy_coef * entropy
+                actor_loss = (-torch.min(surr1, surr2)).mean()
                 critic_loss = nn.MSELoss()(V, batch_rtgs)
 
                 # Calculate gradients and perform backward propagation for actor network
@@ -245,7 +243,7 @@ class PPO:
         t = 0  # Keeps track of how many timesteps we've run so far this batch
 
         should_render = False
-        if self.logger["i_so_far"] % 2 == 0 and self.render:
+        if self.logger["i_so_far"] % self.render_every_x_iterations == 0 and self.render:
             should_render = True
 
         # Keep simulating until we've run more than or equal to specified timesteps per batch
@@ -269,6 +267,10 @@ class PPO:
                 done = terminated | truncated
 
                 if done:
+                    # add the final board observation
+                    rew = self.env.rewards[self.current_agent_player]
+                    if rew < -2:
+                        rewards_per_episode[-1] = rew
                     break
 
                 # If we are not playing as the agent, we want to play randomly

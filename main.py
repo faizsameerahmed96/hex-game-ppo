@@ -30,6 +30,7 @@ def main():
         "render_every_i": 10,
         "break_after_x_win_percent": 80,
         "train_against_opponent": False,
+        "render_every_x_iterations": 5,
     }
 
     # Delete old models

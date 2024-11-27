@@ -9,7 +9,12 @@
 - [x] Create a system for saving
 - [x] Check if player 2 works fine
 - [x] Create a double learning agent
+- [ ] Understand the codebase and clean
+  - [x] Check if negative reward is happening
+  - [ ] Go through PPO one more time
+  - [ ] Clean codebase
 - [ ] Make it more resumable, ability to start with player_2 training if player 1 was the last trained
+- [ ] Add a way to manually specify what we want
 - [ ] Ability to define custom network for training against
 - [ ] Common strategies win/lose
 - [ ] Delete older agents every time we save
