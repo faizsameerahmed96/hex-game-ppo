@@ -13,10 +13,11 @@
   - [x] Check if negative reward is happening
   - [ ] Go through PPO one more time
   - [ ] Clean codebase
-- [ ] Make it more resumable, ability to start with player_2 training if player 1 was the last trained
+- [ ] Make it resumable, ability to start with player_2 training if player 1 was the last trained
 - [ ] Add a way to manually specify what we want
 - [ ] Ability to define custom network for training against
 - [ ] Common strategies win/lose
+- [ ] Make opponenet into interface and allow it to be random or whatever it wants
 - [ ] Delete older agents every time we save
 - [ ] Resume Learning every time (along with which model was training last)
 - [ ] Evaluate a specific model against the other

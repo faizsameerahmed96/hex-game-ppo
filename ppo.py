@@ -71,7 +71,6 @@ class PPO:
         # The opponent actor we want to fight
         self.opponent_actor = policy_class(env.board_size, self.act_dim)
         self.opponent_actor.eval()
-        self.load_opponent_model()
 
         # Initialize optimizers for actor and critic
         self.actor_optim = Adam(self.actor.parameters(), lr=self.lr)
@@ -87,21 +86,22 @@ class PPO:
             "actor_losses": [],  # losses of actor network in current iteration
         }
 
-    def load_opponent_model(self):
-        path = f"./checkpoints/{self.other_agent_player}/actor/"
+    def load_model_for(self, agent: str, model_path: str):
+        """
+        Load a model for a specific agent
 
-        if not os.path.exists(path):
-            print("No opponent model found")
-            return
-        
-        # Get the most recent model
-        files = os.listdir(path)
-        files.sort()
-        file = files[-1]
+        Parameters:
+            agent - the agent to load the model for
+            model_path - the path to the model
 
-        print(f"Loading opponent model: {file}")
-
-        self.opponent_actor.load_state_dict(torch.load(f"./checkpoints/{self.other_agent_player}/actor/{file}"))
+        Returns:
+            None
+        """
+        print(f"Loading model for {agent} from {model_path}")
+        if agent == self.current_agent_player:
+            self.actor.load_state_dict(torch.load(model_path))
+        else:
+            self.opponent_actor.load_state_dict(torch.load(model_path))
 
     def transform_observation(self, obs):
         """
