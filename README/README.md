@@ -13,6 +13,10 @@
   - [x] Check if negative reward is happening
   - [ ] Go through PPO one more time
   - [ ] Clean codebase
+- [ ] Update our hex game
+- [ ] Add file logging for important updates
+- [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.
+- [ ] Create a function to simulate flow between 2 agents
 - [ ] Make it resumable, ability to start with player_2 training if player 1 was the last trained
 - [ ] Add a way to manually specify what we want
 - [ ] Ability to define custom network for training against
@@ -46,3 +50,5 @@ TO ADD
 - Investigate when pie rule is more effective
 - Create a distribution map of where the actions where chosen mainly in the last map
 - Adaptive temperature based on win %
+- A single model learning that is trained for both player 1 and player 2. This way it can form associations from what it has already learnt!
+- Apply UCB alternative during exploration so that it run through all the parts of a board

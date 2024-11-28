@@ -42,7 +42,7 @@ class PPO:
         self.n_updates_per_iteration = hyperparameters.get("n_updates_per_iteration", 5)
         self.lr = hyperparameters.get("lr", 0.005)
         self.gamma = hyperparameters.get("gamma", 0.95)
-        self.clip = hyperparameters.get("clip", 0.2)
+        self.clip = hyperparameters.get("clip", 0.17)
         self.render = hyperparameters.get("render", True)
         self.render_every_i = hyperparameters.get("render_every_i", 10)
         self.save_freq = hyperparameters.get("save_freq", 10)
