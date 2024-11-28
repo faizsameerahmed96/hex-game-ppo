@@ -24,7 +24,7 @@ def main():
         "max_timesteps_per_episode": 300,
         "gamma": 0.6,
         "n_updates_per_iteration": 20,
-        "lr": 3e-5,
+        "lr": 3e-4,
         "clip": 0.2,
         "save_freq": 200,
         "render": True,
@@ -59,7 +59,7 @@ def main():
     # Reusming training
     player_1_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
     player_2_model.load_model_for("player_2", get_latest_model_for_player("player_2"))
-    
+
     # Duel training loop
     player_1_model.train_against_opponent = True
     player_2_model.train_against_opponent = True
@@ -69,10 +69,11 @@ def main():
     player_2_model.break_after_x_win_percent = 80
 
     while True:
-        player_1_model.learn(total_timesteps=-1)
-        player_2_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
         player_2_model.learn(total_timesteps=-1)
         player_1_model.load_model_for("player_2", get_latest_model_for_player("player_2"))
+
+        player_1_model.learn(total_timesteps=-1)
+        player_2_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
 
         delete_old_models("./checkpoints/player_1/actor")
         delete_old_models("./checkpoints/player_1/critic")

@@ -52,3 +52,11 @@ TO ADD
 - Adaptive temperature based on win %
 - A single model learning that is trained for both player 1 and player 2. This way it can form associations from what it has already learnt!
 - Apply UCB alternative during exploration so that it run through all the parts of a board
+- Clip the -1 reward to 0 to promote delaying the game and therefore future learning
+- After a certain iteration 
+  - change parameters
+  - change reward structure
+  - focus on won games and keep % of batch that much
+
+
+- "lr": 3e-5, clip 0.2 did well after some time

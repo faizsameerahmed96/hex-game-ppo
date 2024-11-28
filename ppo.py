@@ -303,6 +303,8 @@ class PPO:
                 self.env.step(action)
                 observation = self.env.observe(self.current_agent_player)
                 rew = self.env.rewards[self.current_agent_player]
+                if(rew == -1):
+                    rew = 1
 
                 # Track recent reward, action, and action log probability
                 rewards_per_episode.append(rew)
