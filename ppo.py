@@ -1,6 +1,7 @@
 import os
 import random
 import time
+from collections import deque
 from queue import Queue
 
 import numpy as np
@@ -33,22 +34,28 @@ class PPO:
         Returns:
                 None
         """
-        self.timesteps_per_batch = hyperparameters.get("timesteps_per_batch", 4800)
         self.episodes_per_batch = hyperparameters.get("episodes_per_batch", 10)
         self.max_timesteps_per_episode = hyperparameters.get(
             "max_timesteps_per_episode", 1600
         )
-        self.render_every_x_iterations = hyperparameters.get("render_every_x_iterations", 5)
+        self.render_every_x_iterations = hyperparameters.get(
+            "render_every_x_iterations", 5
+        )
         self.n_updates_per_iteration = hyperparameters.get("n_updates_per_iteration", 5)
         self.lr = hyperparameters.get("lr", 0.005)
         self.gamma = hyperparameters.get("gamma", 0.95)
         self.clip = hyperparameters.get("clip", 0.17)
-        self.render = hyperparameters.get("render", True)
-        self.render_every_i = hyperparameters.get("render_every_i", 10)
         self.save_freq = hyperparameters.get("save_freq", 10)
-        self.break_after_x_win_percent = hyperparameters.get("break_after_x_win_percent", 95)
+        self.break_after_x_win_percent = hyperparameters.get(
+            "break_after_x_win_percent", 95
+        )
         self.seed = hyperparameters.get("seed", None)
-        self.train_against_opponent = hyperparameters.get("train_against_opponent", False)
+        self.train_against_opponent = hyperparameters.get(
+            "train_against_opponent", False
+        )
+        self.max_num_of_episodes_to_calculate_win_percent = hyperparameters.get(
+            "max_num_of_episodes_to_calculate_win_percent", 20
+        )
 
         if self.seed != None:
             torch.manual_seed(self.seed)
@@ -59,7 +66,9 @@ class PPO:
         self.other_agent_player = (
             "player_1" if current_agent_player == "player_2" else "player_2"
         )
-        self.wins_queue = Queue()
+        self.wins_queue = deque(
+            maxlen=self.max_num_of_episodes_to_calculate_win_percent
+        )
 
         self.act_dim = env.action_space(current_agent_player).n
 
@@ -146,46 +155,28 @@ class PPO:
             self.logger["i_so_far"] = iterations_so_far
 
             # Calculate advantage at k-th iteration
-            V, _, _ = self.evaluate(batch_obs, batch_acts)
+            V, _ = self.evaluate(batch_obs, batch_acts)
             A_k = batch_rtgs - V.detach()  # ALG STEP 5
 
-            # One of the only tricks I use that isn't in the pseudocode. Normalizing advantages
-            # isn't theoretically necessary, but in practice it decreases the variance of
-            # our advantages and makes convergence much more stable and faster. I added this because
-            # solving some environments was too unstable without it.
             A_k = (A_k - A_k.mean()) / (A_k.std() + 1e-10)
 
             # This is the loop where we update our network for some n epochs
             for _ in range(self.n_updates_per_iteration):  # ALG STEP 6 & 7
-                # Calculate V_phi and pi_theta(a_t | s_t)
-                V, curr_log_probs, entropy = self.evaluate(batch_obs, batch_acts)
+                V, curr_log_probs = self.evaluate(batch_obs, batch_acts)
 
-                # Calculate the ratio pi_theta(a_t | s_t) / pi_theta_k(a_t | s_t)
-                # NOTE: we just subtract the logs, which is the same as
-                # dividing the values and then canceling the log with e^log.
-                # For why we use log probabilities instead of actual probabilities,
-                # here's a great explanation:
-                # https://cs.stackexchange.com/questions/70518/why-do-we-use-the-log-in-gradient-based-reinforcement-algorithms
-                # TL;DR makes gradient ascent easier behind the scenes.
                 ratios = torch.exp(curr_log_probs - batch_log_probs)
 
                 # Calculate surrogate losses.
                 surr1 = ratios * A_k
                 surr2 = torch.clamp(ratios, 1 - self.clip, 1 + self.clip) * A_k
 
-                # Calculate actor and critic losses.
-                # NOTE: we take the negative min of the surrogate losses because we're trying to maximize
-                # the performance function, but Adam minimizes the loss. So minimizing the negative
-                # performance function maximizes it.
                 actor_loss = (-torch.min(surr1, surr2)).mean()
                 critic_loss = nn.MSELoss()(V, batch_rtgs)
 
-                # Calculate gradients and perform backward propagation for actor network
                 self.actor_optim.zero_grad()
                 actor_loss.backward(retain_graph=True)
                 self.actor_optim.step()
 
-                # Calculate gradients and perform backward propagation for critic network
                 self.critic_optim.zero_grad()
                 critic_loss.backward()
                 self.critic_optim.step()
@@ -200,8 +191,10 @@ class PPO:
             if iterations_so_far % self.save_freq == 0 and iterations_so_far != 0:
                 self.save_model()
 
-            if self.wins_queue.queue.count(1) * 100 / self.wins_queue.qsize() > self.break_after_x_win_percent:
-                self.save_model()
+            if (
+                self.wins_queue.count(1) * 100 / len(self.wins_queue)
+                > self.break_after_x_win_percent
+            ):
                 return
 
     def save_model(self):
@@ -211,9 +204,14 @@ class PPO:
         os.makedirs(f"./checkpoints/{self.current_agent_player}/actor/", exist_ok=True)
         os.makedirs(f"./checkpoints/{self.current_agent_player}/critic/", exist_ok=True)
 
-        torch.save(self.actor.state_dict(), f"./checkpoints/{self.current_agent_player}/actor/{current_time}.pth")
-        torch.save(self.critic.state_dict(), f"./checkpoints/{self.current_agent_player}/critic/{current_time}.pth")
-
+        torch.save(
+            self.actor.state_dict(),
+            f"./checkpoints/{self.current_agent_player}/actor/{current_time}.pth",
+        )
+        torch.save(
+            self.critic.state_dict(),
+            f"./checkpoints/{self.current_agent_player}/critic/{current_time}.pth",
+        )
 
     def collect_trajectories(self):
         """
@@ -238,12 +236,13 @@ class PPO:
         # upon each new episode
         rewards_per_episode = []
 
-        self.wins_queue = Queue()
-
         t = 0  # Keeps track of how many timesteps we've run so far this batch
 
         should_render = False
-        if self.logger["i_so_far"] % self.render_every_x_iterations == 0 and self.render:
+        if (
+            self.render_every_x_iterations is not None
+            and self.logger["i_so_far"] % self.render_every_x_iterations == 0
+        ):
             should_render = True
 
         # Keep simulating until we've run more than or equal to specified timesteps per batch
@@ -267,7 +266,7 @@ class PPO:
                 done = terminated | truncated
 
                 if done:
-                    # add the final board observation
+                    # If we lose, we want to make the last step the negative reward
                     rew = self.env.rewards[self.current_agent_player]
                     if rew < -2:
                         rewards_per_episode[-1] = rew
@@ -288,7 +287,6 @@ class PPO:
                         row, col = random.choice(zero_indexes)
                         action = row * self.env.board_size + col
 
-                    
                     self.env.step(action)
                     continue
 
@@ -303,8 +301,6 @@ class PPO:
                 self.env.step(action)
                 observation = self.env.observe(self.current_agent_player)
                 rew = self.env.rewards[self.current_agent_player]
-                if(rew == -1):
-                    rew = 1
 
                 # Track recent reward, action, and action log probability
                 rewards_per_episode.append(rew)
@@ -317,9 +313,9 @@ class PPO:
                 self.env.rewards[self.current_agent_player]
                 > self.env.rewards[self.other_agent_player]
             ):
-                self.wins_queue.put(1)
+                self.wins_queue.append(1)
             else:
-                self.wins_queue.put(0)
+                self.wins_queue.append(0)
 
             # Track episodic lengths and rewards
             length_of_each_episode_in_batch.append(ep_t)
@@ -440,14 +436,12 @@ class PPO:
         # Convert logits to action probabilities
         action_probs = F.softmax(logits, dim=-1)
 
-        entropy = -(action_probs * torch.log(action_probs + 1e-10)).sum(dim=-1).mean()
-
         # Calculate log probabilities of the taken actions
         log_probs = torch.log(
             action_probs[torch.arange(len(batch_acts)), batch_acts.long()]
         )
 
-        return V, log_probs, entropy
+        return V, log_probs
 
     def _log_summary(self):
         """
@@ -488,7 +482,7 @@ class PPO:
         print(f"Average Episodic Return: {avg_ep_rews}", flush=True)
         print(f"Average Loss: {avg_actor_loss}", flush=True)
         print(
-            f"Wins % = {self.wins_queue.queue.count(1) * 100 / self.wins_queue.qsize()}%",
+            f"Wins % in last {self.max_num_of_episodes_to_calculate_win_percent} episodes = {self.wins_queue.count(1) * 100 / len(self.wins_queue)}%",
             flush=True,
         )
         print(f"Timesteps So Far: {t_so_far}", flush=True)

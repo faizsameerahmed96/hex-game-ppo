@@ -19,19 +19,20 @@ def get_latest_model_for_player(player):
 
 def main():
     hyperparameters = {
-        "episodes_per_batch": 20,
-        "timesteps_per_batch": 2048,
+        "episodes_per_batch": 10,
         "max_timesteps_per_episode": 300,
         "gamma": 0.6,
-        "n_updates_per_iteration": 20,
+        "n_updates_per_iteration": 10,
         "lr": 3e-4,
         "clip": 0.2,
         "save_freq": 200,
-        "render": True,
-        "render_every_i": 10,
-        "break_after_x_win_percent": 80,
+
+        "render_every_x_iterations": 100,
+
+        "max_num_of_episodes_to_calculate_win_percent": 20,
+        "break_after_x_win_percent": 101,
+
         "train_against_opponent": False,
-        "render_every_x_iterations": 5,
     }
 
     # Delete old models
@@ -51,10 +52,11 @@ def main():
 
     # First generalize both models on their own before starting the duel training loop
     # print("Training for general information")
-    # player_1_model.learn(total_timesteps=-1)
+    # player_1_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
+    player_1_model.learn(total_timesteps=-1)
     # player_2_model.learn(total_timesteps=-1)
 
-    
+    return
     print("Dueling training start")
     # Reusming training
     player_1_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
