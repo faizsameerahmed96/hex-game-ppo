@@ -1,6 +1,7 @@
 import os
 from experiments.smart_random_1.smart_random import train_smart_random
 from experiments.smart_random_1_5.smart_random import train_smart_random_1_5
+from experiments.smart_random_2.smart_random import train_smart_random_2
 from network import PolicyValueNetwork
 from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
@@ -34,7 +35,9 @@ def main():
     # train_smart_random(hyperparameters)
 
     # Train a more focused smart random opponent
-    train_smart_random_1_5(hyperparameters)
+    # train_smart_random_1_5(hyperparameters)
+
+    train_smart_random_2(hyperparameters)
 
     return
 

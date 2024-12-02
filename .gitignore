@@ -2,3 +2,4 @@ ourhexgame/.git
 checkpoints/*
 __pycache__
 checkpoints
+implementation/model

@@ -252,6 +252,33 @@ Iteration took: 3.28 secs
 ------------------------------------------------------
 ```
 
+### Smart Random 2
+```
+hyperparameters = {
+        **hyperparameters,
+        "break_after_x_continuous_win_percent": 90,
+        "render_every_x_iterations": 20,
+        "episodes_per_batch": 20,
+        "clip": 0.2,
+        "lr": 3e-5,
+        "n_updates_per_iteration": 20,
+        "gamma": 0.6,
+    }
+```
+```
+PLAYER: player_1
+Average Episodic Length: 52.75
+Average Episodic Return: 28.1
+Average Loss: 0.10471
+Training time elapsed in min 11.993719983100892
+Wins % in last 20 episodes = 95.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 172864
+Iteration took: 3.81 secs
+------------------------------------------------------
+```
+
+
 
 ## Scratch Notes
 - A higher learning rate prioritizes future learning. Explore.
