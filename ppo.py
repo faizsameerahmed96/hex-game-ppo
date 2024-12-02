@@ -207,20 +207,25 @@ class PPO:
             ):
                 return
 
-    def save_model(self):
+    def save_model(self, path=None):
         current_time = time.time()
 
+        if path is None:
+            path = f"./checkpoints/"
+
+        path = f"{path}{self.current_agent_player}/{current_time}/"
+
         # make sure the directories exist
-        os.makedirs(f"./checkpoints/{self.current_agent_player}/actor/", exist_ok=True)
-        os.makedirs(f"./checkpoints/{self.current_agent_player}/critic/", exist_ok=True)
+        os.makedirs(f"{path}", exist_ok=True)
 
         torch.save(
             self.actor.state_dict(),
-            f"./checkpoints/{self.current_agent_player}/actor/{current_time}.pth",
+            f"{path}actor.pth",
         )
+
         torch.save(
             self.critic.state_dict(),
-            f"./checkpoints/{self.current_agent_player}/critic/{current_time}.pth",
+            f"{path}critic.pth",
         )
 
     def collect_trajectories(self):

@@ -58,6 +58,9 @@ TO ADD
         "render_every_x_iterations": 100,
   ```
 
+### Train Random
+- We will train it again a completely random opponent initially. We use the following hyperparameters.
+
 
 ## Scratch Notes
 - A higher learning rate prioritizes future learning. Explore.

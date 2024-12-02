@@ -5,6 +5,8 @@ from ourhexgame.ourhexenv import OurHexGame
 from ppo import PPO
 from utils import get_latest_model_for_player
 
+from experiments.full_random.full_random import train_random
+
 
 def main():
     hyperparameters = {
@@ -24,6 +26,12 @@ def main():
         "train_against_opponent": False,
         "opponent": RandomOpponent(),
     }
+
+
+    # Train both models for a completely random opponent
+    train_random(hyperparameters)
+
+    return
 
     env = OurHexGame(board_size=11, render_mode="human", sparse_flag=False)
 

@@ -1,3 +1,4 @@
 ourhexgame/.git
 checkpoints/*
-pycache
+__pycache__
+checkpoints
