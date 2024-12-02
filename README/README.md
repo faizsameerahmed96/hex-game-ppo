@@ -13,7 +13,7 @@
   - [x] Check if negative reward is happening
   - [x] Go through PPO one more time
   - [x] Clean codebase
-- [ ] Update our hex game
+- [x] Update our hex game
 - [ ] Implement custom opponents
 - [ ] Train against smart agent from pa4
 - [ ] Add file logging for important updates

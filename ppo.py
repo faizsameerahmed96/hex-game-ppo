@@ -70,6 +70,8 @@ class PPO:
             maxlen=self.max_num_of_episodes_to_calculate_win_percent
         )
 
+        self.start_learn_time = time.time()
+
         self.act_dim = env.action_space(current_agent_player).n
 
         # To select the next action (theta_k)
@@ -137,6 +139,8 @@ class PPO:
                 total_timesteps - the total number of timesteps to train for. Pass - 1 to train indefinitely.
         """
         print(f"Learning for {total_timesteps} timesteps")
+
+        self.start_learn_time = time.time()
 
         timesteps_so_far = 0
         iterations_so_far = 0  # Iterations ran so far
@@ -345,7 +349,7 @@ class PPO:
                 batch_rtgs - the rewards to go, Shape: (number of timesteps in batch)
         """
         # The rewards-to-go (rtg) per episode per batch to return.
-        batch_rtgs = [] 
+        batch_rtgs = []
 
         for ep_rews in reversed(batch_rews):
 
@@ -382,7 +386,7 @@ class PPO:
             self.env.generate_info(self.current_agent_player)["action_mask"]
         )
 
-        action_probs = max(action_probs * action_mask)
+        action_probs = action_probs * action_mask
 
         sum_t = action_probs.sum()
 
@@ -474,6 +478,10 @@ class PPO:
         print(f"Average Episodic Length: {avg_ep_lens}", flush=True)
         print(f"Average Episodic Return: {avg_ep_rews}", flush=True)
         print(f"Average Loss: {avg_actor_loss}", flush=True)
+        print(
+            f"Training time elapsed in min {(time.time() - self.start_learn_time) / 60}",
+            flush=True,
+        )
         print(
             f"Wins % in last {self.max_num_of_episodes_to_calculate_win_percent} episodes = {self.wins_queue.count(1) * 100 / len(self.wins_queue)}%",
             flush=True,

@@ -1,5 +1,6 @@
 import math
 import warnings
+import functools
 import pygame
 import numpy as np
 from typing import Dict
@@ -166,6 +167,14 @@ class OurHexGame(AECEnv):
         self.left_virtual = self.top_virtual + 2  # player_2 owns left + right nodes
         self.right_virtual = self.top_virtual + 3
 
+    @functools.lru_cache(maxsize=128)
+    def observation_space(self, agent):
+        return self.observation_spaces[agent]
+
+    @functools.lru_cache(maxsize=128)
+    def action_space(self, agent):
+        return self.action_spaces[agent]
+
     def reset(self, seed: int = None, options: dict = {}):
         self.board = np.zeros((self.board_size, self.board_size), dtype=int)
         self.agents = self.possible_agents[:]
@@ -218,8 +227,11 @@ class OurHexGame(AECEnv):
             self.is_pie_rule_used = True
             x, y = np.where(self.board == 1)
             row, col = x[0], y[0]
-            self.board[row][col] = 0
-            self.board[col][row] = 2
+            # Reset both the board and UF structure before placing the piece
+            self.board = np.zeros((self.board_size, self.board_size), dtype=int)
+            self.uf = UnionFind(self.board_size * self.board_size + 4)
+            self.place_piece(col, row, 2)
+
         else:
             row, col = divmod(action, self.board_size)
 
@@ -284,7 +296,7 @@ class OurHexGame(AECEnv):
             if col == self.board_size - 1:
                 self.uf.union(pos, self.right_virtual)
 
-        self.board[row, col] = marker
+        self.board[row][col] = marker
 
     def check_winner(self, player):
         """
@@ -299,7 +311,7 @@ class OurHexGame(AECEnv):
 
     def observe(self, agent):
         return {
-            "observation": self.board,
+            "observation": self.board.copy(),
             "pie_rule_used": 1 if self.is_pie_rule_used else 0,
         }
 
