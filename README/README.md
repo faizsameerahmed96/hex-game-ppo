@@ -15,6 +15,7 @@
   - [x] Clean codebase
 - [x] Update our hex game
 - [x] Implement custom opponents
+- [ ] Train and save again radom agent
 - [ ] Train against smart agent from pa4
 - [ ] Add file logging for important updates
 - [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.

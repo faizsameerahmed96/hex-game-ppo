@@ -20,10 +20,10 @@ def get_latest_model_for_player(player):
 
 def main():
     hyperparameters = {
-        "episodes_per_batch": 10,
+        "episodes_per_batch": 20,
         "max_timesteps_per_episode": 300,
         "gamma": 0.6,
-        "n_updates_per_iteration": 20,
+        "n_updates_per_iteration": 10,
         "lr": 3e-5,
         "clip": 0.2,
         "save_freq": 200,
