@@ -57,6 +57,11 @@ class PPO:
             "max_num_of_episodes_to_calculate_win_percent", 20
         )
 
+        self.opponent = hyperparameters.get("opponent", None)
+
+        if self.opponent is None:
+            raise Exception("Opponent is not defined")
+
         if self.seed != None:
             torch.manual_seed(self.seed)
             print(f"Successfully set seed to {self.seed}")
@@ -280,15 +285,7 @@ class PPO:
                     if self.train_against_opponent:
                         action = self.get_action(observation, self.opponent_actor)[0]
                     else:
-                        # We want to play randomly
-                        zero_indexes = [
-                            (i, j)
-                            for i in range(len(observation["observation"]))
-                            for j in range(len(observation["observation"][i]))
-                            if observation["observation"][i][j] == 0
-                        ]
-                        row, col = random.choice(zero_indexes)
-                        action = row * self.env.board_size + col
+                        action = self.opponent.get_action(observation)
 
                     self.env.step(action)
                     continue

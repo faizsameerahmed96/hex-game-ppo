@@ -14,7 +14,7 @@
   - [x] Go through PPO one more time
   - [x] Clean codebase
 - [x] Update our hex game
-- [ ] Implement custom opponents
+- [x] Implement custom opponents
 - [ ] Train against smart agent from pa4
 - [ ] Add file logging for important updates
 - [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.

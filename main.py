@@ -8,6 +8,7 @@ from eval_policy import eval_policy
 from network import PolicyValueNetwork
 from ourhexgame.ourhexenv import OurHexGame
 from ppo import PPO
+from opponents.random_opponent import RandomOpponent
 import os
 
 
@@ -33,9 +34,8 @@ def main():
         "break_after_x_win_percent": 101,
 
         "train_against_opponent": False,
+        "opponent": RandomOpponent(),
     }
-
-    # Delete old models
 
     env = OurHexGame(board_size=11, render_mode="human", sparse_flag=False)
 
