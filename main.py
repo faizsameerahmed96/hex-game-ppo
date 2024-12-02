@@ -4,6 +4,8 @@ from experiments.smart_random_1_5.smart_random import train_smart_random_1_5
 from experiments.smart_random_2.smart_random import train_smart_random_2
 
 from experiments.full_random_sparse.full_random import train_random_sparse
+from experiments.smart_random_1_sparse.smart_random import train_smart_random_sparse
+from experiments.smart_random_1_5_sparse.smart_random import train_smart_random_1_5
 from network import PolicyValueNetwork
 from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
@@ -58,7 +60,11 @@ def main():
     }
 
     # SPARSE TRAINING
-    train_random_sparse(hyperparameters)
+    # train_random_sparse(hyperparameters)
+
+    # train_smart_random_sparse(hyperparameters)
+
+    train_smart_random_1_5(hyperparameters)
     
 
     return

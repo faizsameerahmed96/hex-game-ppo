@@ -16,12 +16,10 @@
 - [x] Update our hex game
 - [x] Implement custom opponents
 - [x] Train and save again radom agent
-- [ ] Train against smart agent from pa4, maybe some distribution based on opponent player!
-- [ ] Add file logging for important updates
+- [x] Train against smart agent from pa4, maybe some distribution based on opponent player!
 - [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.
 - [ ] Create a function to simulate flow between 2 agents
 - [ ] Make it resumable, ability to start with player_2 training if player 1 was the last trained
-- [ ] Add a way to manually specify what we want
 - [ ] Ability to define custom network for training against
 - [ ] Common strategies win/lose
 - [ ] Make opponenet into interface and allow it to be random or whatever it wants
@@ -108,6 +106,7 @@ Timesteps So Far: 246005
 Iteration took: 3.81 secs
 ------------------------------------------------------
 ```
+
 
 ### Smart Random
 - We will generate a random agent that used probability distributions to come up with common ways of winning
@@ -290,6 +289,55 @@ Iteration took: 5.11 secs
 ------------------------------------------------------
 ```
 
+
+
+
+## Sparse
+
+### Random
+```
+-------------------- Iteration #147 --------------------
+PLAYER: player_1
+Average Episodic Length: 90.3
+Average Episodic Return: 0.9
+Average Loss: 0.09131
+Training time elapsed in min 17.981675533453622
+Wins % in last 20 episodes = 90.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 298403
+Iteration took: 5.18 secs
+------------------------------------------------------
+```
+
+### Smart Random 1
+```
+-------------------- Iteration #20 --------------------
+PLAYER: player_2
+Average Episodic Length: 61.2
+Average Episodic Return: 0.9
+Average Loss: 0.1271
+Training time elapsed in min 1.3205894192059835
+Wins % in last 20 episodes = 90.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 27810
+Iteration took: 3.48 secs
+------------------------------------------------------
+```
+
+### Smart Random 1_5
+```
+-------------------- Iteration #24 --------------------
+PLAYER: player_2
+Average Episodic Length: 46.45
+Average Episodic Return: 0.95
+Average Loss: 0.1131
+Training time elapsed in min 1.7031834204991658
+Wins % in last 20 episodes = 95.0%
+Wins % breakout percentage = 87.0%
+Timesteps So Far: 27774
+Iteration took: 3.35 secs
+------------------------------------------------------
+```
 
 ## Scratch Notes
 - A higher learning rate prioritizes future learning. Explore.
