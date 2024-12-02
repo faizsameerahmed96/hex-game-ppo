@@ -1,29 +1,17 @@
-import sys
-
-import gymnasium as gym
-import torch
-
-from arguments import get_args
-from eval_policy import eval_policy
+import os
 from network import PolicyValueNetwork
+from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
 from ppo import PPO
-from opponents.random_opponent import RandomOpponent
-import os
+from utils import get_latest_model_for_player
 
-
-def get_latest_model_for_player(player):
-    path = f"./checkpoints/{player}/actor"
-    files = os.listdir(path)
-    files.sort()
-    return path + "/" + files[-1]
 
 def main():
     hyperparameters = {
         "episodes_per_batch": 20,
         "max_timesteps_per_episode": 300,
         "gamma": 0.6,
-        "n_updates_per_iteration": 10,
+        "n_updates_per_iteration": 15,
         "lr": 3e-5,
         "clip": 0.2,
         "save_freq": 200,
