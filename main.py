@@ -1,6 +1,6 @@
 import os
 from experiments.smart_random_1.smart_random import train_smart_random
-from experiments.smart_random_5.smart_random import train_smart_random_5
+from experiments.smart_random_1_5.smart_random import train_smart_random_1_5
 from network import PolicyValueNetwork
 from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
@@ -23,7 +23,7 @@ def main():
         "max_num_of_episodes_to_calculate_win_percent": 20,
         "break_after_x_continuous_win_percent": 101,
         "how_many_consecutive_wins_to_break": 5,
-        "train_against_opponent": False,
+        "step_reward_multiplier": 1,
         "opponent": RandomOpponent(),
     }
 
@@ -34,7 +34,7 @@ def main():
     # train_smart_random(hyperparameters)
 
     # Train a more focused smart random opponent
-    train_smart_random_5(hyperparameters)
+    train_smart_random_1_5(hyperparameters)
 
     return
 

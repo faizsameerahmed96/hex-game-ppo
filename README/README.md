@@ -139,6 +139,119 @@ Iteration took: 2.65 secs
 ------------------------------------------------------
 ```
 
+#### Center Weight 5 
+This agent is more focused towards winning. With the default hyperparameters, it was not able to beat the smart agent. It kept reaching a breakout % of `20%` at most. This could mean the agent is not learning enough. 
+
+Let us try the follow hyperparameters.
+```json
+"break_after_x_continuous_win_percent": 90,
+"render_every_x_iterations": 20,
+"clip": 0.3,
+"lr": 5e-5,
+```
+```
+PLAYER: player_1
+Average Episodic Length: 41.6
+Average Episodic Return: -80.8
+Average Loss: -0.0119
+Training time elapsed in min 8.746547667185466
+Wins % in last 20 episodes = 0.0%
+Wins % breakout percentage = 14.0%
+Timesteps So Far: 190843
+Iteration took: 2.26 secs
+```
+
+
+We are still not moving forward, let us train it for a dumber agent before moving ahead
+
+#### Center Weight 3
+No progress 
+
+#### Center Weight 2
+No progress
+
+
+## Update the network to involve more convolution layers (network_2)
+
+### Full Random
+```
+-------------------- Iteration #37 --------------------
+PLAYER: player_1
+Average Episodic Length: 77.3
+Average Episodic Return: 21.85
+Average Loss: 0.11401
+Training time elapsed in min 3.4245606660842896
+Wins % in last 20 episodes = 100.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 73880
+Iteration took: 4.51 secs
+------------------------------------------------------
+
+PLAYER: player_2
+Average Episodic Length: 82.2
+Average Episodic Return: 19.9
+Average Loss: 0.09309
+Training time elapsed in min 6.68732625246048
+Wins % in last 20 episodes = 100.0%
+Wins % breakout percentage = 85.0%
+Timesteps So Far: 143003
+Iteration took: 4.6 secs
+```
+
+### Smart Random 1
+```
+-------------------- Iteration #14 --------------------
+PLAYER: player_1
+Average Episodic Length: 61.5
+Average Episodic Return: 17.7
+Average Loss: 0.11272
+Training time elapsed in min 0.9132973829905192
+Wins % in last 20 episodes = 90.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 18767
+Iteration took: 3.33 secs
+------------------------------------------------------
+```
+
+### Smart Random 1.5
+```
+hyperparameters = {
+        **hyperparameters,
+        "break_after_x_continuous_win_percent": 90,
+        "render_every_x_iterations": 20,
+        "episodes_per_batch": 20,
+        "clip": 0.2,
+        "lr": 3e-5,
+        "n_updates_per_iteration": 20,
+        "gamma": 0.6,
+    }
+```
+```
+-------------------- Iteration #67 --------------------
+PLAYER: player_1
+Average Episodic Length: 38.8
+Average Episodic Return: 41.1
+Average Loss: 0.111
+Training time elapsed in min 4.849908149242401
+Wins % in last 20 episodes = 100.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 77360
+Iteration took: 3.05 secs
+------------------------------------------------------
+
+-------------------- Iteration #38 --------------------
+PLAYER: player_2
+Average Episodic Length: 45.0
+Average Episodic Return: 38.5
+Average Loss: 0.12617
+Training time elapsed in min 2.6142526706059774
+Wins % in last 20 episodes = 100.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 42573
+Iteration took: 3.28 secs
+------------------------------------------------------
+```
+
 
 ## Scratch Notes
 - A higher learning rate prioritizes future learning. Explore.

@@ -26,13 +26,13 @@ def train_smart_random(hyperparameters):
         env=env,
         **{**hyperparameters, "current_agent_player": "player_1", "opponent": SmartRandomOpponent(player="player_2", center_weight=CENTER_WEIGHT)}
     )
-    player_1_model.load_model_for("player_1", '/Users/faizahmed/Documents/SJSU/Reinforcement Learning/pa5/experiments/full_random/checkpoints/player_1/1733112909.861575')
+    player_1_model.load_model_for("player_1", '/Users/faizahmed/Documents/SJSU/Reinforcement Learning/pa5/experiments/full_random/checkpoints/player_1/1733132492.062811')
     player_2_model = PPO(
         policy_class=PolicyValueNetwork,
         env=env,
         **{**hyperparameters, "current_agent_player": "player_2", "opponent": SmartRandomOpponent(player="player_1", center_weight=CENTER_WEIGHT)}
     )
-    player_2_model.load_model_for("player_2", '/Users/faizahmed/Documents/SJSU/Reinforcement Learning/pa5/experiments/full_random/checkpoints/player_2/1733113225.488374')
+    player_2_model.load_model_for("player_2", '/Users/faizahmed/Documents/SJSU/Reinforcement Learning/pa5/experiments/full_random/checkpoints/player_2/1733132893.4075809')
 
     current_directory = os.path.dirname(os.path.abspath(__file__))
 

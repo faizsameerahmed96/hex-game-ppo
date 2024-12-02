@@ -62,9 +62,6 @@ class PPO:
         self.wins_percent_queue = deque(maxlen=self.how_many_consecutive_wins_to_break)
 
         self.seed = hyperparameters.get("seed", None)
-        self.train_against_opponent = hyperparameters.get(
-            "train_against_opponent", False
-        )
 
         self.opponent = hyperparameters.get("opponent", None)
 
@@ -296,11 +293,7 @@ class PPO:
 
                 # If we are not playing as the agent, we want to play based on passed strategy. TODO make easier to implement custom opponents
                 if self.env.agent_selection != self.current_agent_player:
-                    if self.train_against_opponent:
-                        action = self.get_action(observation, self.opponent_actor)[0]
-                    else:
-                        action = self.opponent.get_action(observation)
-
+                    action = self.opponent.get_action(observation)
                     self.env.step(action)
                     continue
 
