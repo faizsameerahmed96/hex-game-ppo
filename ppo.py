@@ -156,12 +156,13 @@ class PPO:
 
             # Calculate advantage at k-th iteration
             V, _ = self.evaluate(batch_obs, batch_acts)
-            A_k = batch_rtgs - V.detach()  # ALG STEP 5
+            A_k = batch_rtgs - V.detach()
 
+            # Normalize advantages (mentioned in OpenAI implementation)
             A_k = (A_k - A_k.mean()) / (A_k.std() + 1e-10)
 
-            # This is the loop where we update our network for some n epochs
-            for _ in range(self.n_updates_per_iteration):  # ALG STEP 6 & 7
+            # Update actor network
+            for _ in range(self.n_updates_per_iteration):
                 V, curr_log_probs = self.evaluate(batch_obs, batch_acts)
 
                 ratios = torch.exp(curr_log_probs - batch_log_probs)
@@ -219,17 +220,16 @@ class PPO:
 
         Return:
                 batch_obs - batch of episodes (will be the exact same as that returned by the hex environment)
-                batch_acts - the actions collected this batch. Shape: (number of timesteps, dimension of action)
-                batch_log_probs - the log probabilities of each action taken this batch. Shape: (number of timesteps)
-                batch_rtgs - the Rewards-To-Go of each timestep in this batch. Shape: (number of timesteps)
-                length_of_each_episode_in_batch - the lengths of each episode this batch. Shape: (number of episodes)
+                batch_acts - the actions collected this batch
+                batch_log_probs - the log probabilities of each action taken this batch.
+                batch_rtgs - the Rewards-To-Go of each timestep in this batch.
+                length_of_each_episode_in_batch - the lengths of each episode this batch.
         """
-        # Batch data. For more details, check function header.
         batch_obs = []
         batch_acts = []
         batch_log_probs = []
-        batch_rews = []
-        batch_rtgs = []
+        batch_rewards = []
+        batch_rewards_to_go = []
         length_of_each_episode_in_batch = []
 
         # Episodic data. Keeps track of rewards per episode, will¯ get cleared
@@ -245,7 +245,6 @@ class PPO:
         ):
             should_render = True
 
-        # Keep simulating until we've run more than or equal to specified timesteps per batch
         number_of_episodes_so_far = 0
         while number_of_episodes_so_far < self.episodes_per_batch:
             number_of_episodes_so_far += 1
@@ -267,12 +266,12 @@ class PPO:
 
                 if done:
                     # If we lose, we want to make the last step the negative reward
-                    rew = self.env.rewards[self.current_agent_player]
-                    if rew < -2:
-                        rewards_per_episode[-1] = rew
+                    reward = self.env.rewards[self.current_agent_player]
+                    if reward < -2:
+                        rewards_per_episode[-1] = reward
                     break
 
-                # If we are not playing as the agent, we want to play randomly
+                # If we are not playing as the agent, we want to play based on passed strategy. TODO make easier to implement custom opponents
                 if self.env.agent_selection != self.current_agent_player:
                     if self.train_against_opponent:
                         action = self.get_action(observation, self.opponent_actor)[0]
@@ -296,14 +295,13 @@ class PPO:
                 batch_obs.append(observation)
 
                 # Calculate action and make a step in the env.
-                # Note that rew is short for reward.
                 action, log_prob = self.get_action(observation, self.actor)
                 self.env.step(action)
                 observation = self.env.observe(self.current_agent_player)
-                rew = self.env.rewards[self.current_agent_player]
+                reward = self.env.rewards[self.current_agent_player]
 
                 # Track recent reward, action, and action log probability
-                rewards_per_episode.append(rew)
+                rewards_per_episode.append(reward)
                 batch_acts.append(action)
                 batch_log_probs.append(log_prob)
 
@@ -319,20 +317,20 @@ class PPO:
 
             # Track episodic lengths and rewards
             length_of_each_episode_in_batch.append(ep_t)
-            batch_rews.append(rewards_per_episode)
+            batch_rewards.append(rewards_per_episode)
 
         batch_acts = torch.tensor(batch_acts, dtype=torch.float)
         batch_log_probs = torch.tensor(batch_log_probs, dtype=torch.float)
-        batch_rtgs = self.compute_rtgs(batch_rews)
+        batch_rewards_to_go = self.compute_rtgs(batch_rewards)
 
-        self.logger["batch_rews"] = batch_rews
+        self.logger["batch_rews"] = batch_rewards
         self.logger["batch_lens"] = length_of_each_episode_in_batch
 
         return (
             batch_obs,
             batch_acts,
             batch_log_probs,
-            batch_rtgs,
+            batch_rewards_to_go,
             length_of_each_episode_in_batch,
         )
 
@@ -347,21 +345,16 @@ class PPO:
                 batch_rtgs - the rewards to go, Shape: (number of timesteps in batch)
         """
         # The rewards-to-go (rtg) per episode per batch to return.
-        # The shape will be (num timesteps per episode)
-        batch_rtgs = []
+        batch_rtgs = [] 
 
-        # Iterate through each episode
         for ep_rews in reversed(batch_rews):
 
             discounted_reward = 0  # The discounted reward so far
 
-            # Iterate through all rewards in the episode. We go backwards for smoother calculation of each
-            # discounted return (think about why it would be harder starting from the beginning)
             for rew in reversed(ep_rews):
                 discounted_reward = rew + discounted_reward * self.gamma
                 batch_rtgs.insert(0, discounted_reward)
 
-        # Convert the rewards-to-go into a tensor
         batch_rtgs = torch.tensor(batch_rtgs, dtype=torch.float)
 
         return batch_rtgs
@@ -389,7 +382,7 @@ class PPO:
             self.env.generate_info(self.current_agent_player)["action_mask"]
         )
 
-        action_probs = action_probs * action_mask
+        action_probs = max(action_probs * action_mask)
 
         sum_t = action_probs.sum()
 

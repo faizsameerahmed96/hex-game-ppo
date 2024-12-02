@@ -14,6 +14,8 @@
   - [ ] Go through PPO one more time
   - [ ] Clean codebase
 - [ ] Update our hex game
+- [ ] Implement custom opponents
+- [ ] Train against smart agent from pa4
 - [ ] Add file logging for important updates
 - [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.
 - [ ] Create a function to simulate flow between 2 agents
@@ -42,6 +44,18 @@ TO ADD
 
 ## Journal
 - Initially, both agents learn on random. However while dueling the agent seems to stop becoming better and settles around the 0-10% mark
+- The agent takes `40` iterations and `2m` to reach `90+% win rate` against the random strategy with following config.
+  ```
+  "episodes_per_batch": 10,
+        "max_timesteps_per_episode": 300,
+        "gamma": 0.6,
+        "n_updates_per_iteration": 20,
+        "lr": 3e-5,
+        "clip": 0.2,
+        "save_freq": 200,
+
+        "render_every_x_iterations": 100,
+  ```
 
 
 ## Scratch Notes
@@ -57,6 +71,4 @@ TO ADD
   - change parameters
   - change reward structure
   - focus on won games and keep % of batch that much
-
-
-- "lr": 3e-5, clip 0.2 did well after some time
+- Create a buffer of batches where things went well and keep replaying it if we are stuck with win%
