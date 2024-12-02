@@ -9,10 +9,10 @@
 - [x] Create a system for saving
 - [x] Check if player 2 works fine
 - [x] Create a double learning agent
-- [ ] Understand the codebase and clean
+- [x] Understand the codebase and clean
   - [x] Check if negative reward is happening
-  - [ ] Go through PPO one more time
-  - [ ] Clean codebase
+  - [x] Go through PPO one more time
+  - [x] Clean codebase
 - [ ] Update our hex game
 - [ ] Implement custom opponents
 - [ ] Train against smart agent from pa4
