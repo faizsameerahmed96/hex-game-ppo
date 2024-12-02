@@ -114,16 +114,16 @@ Iteration took: 3.81 secs
 
 #### Center Weight 1
 ```
--------------------- Iteration #18 --------------------
+-------------------- Iteration #70 --------------------
 PLAYER: player_1
-Average Episodic Length: 78.65
-Average Episodic Return: 3.1
-Average Loss: 0.11701
-Training time elapsed in min 1.2371784687042235
-Wins % in last 20 episodes = 85.0%
+Average Episodic Length: 67.6
+Average Episodic Return: 26.7
+Average Loss: 0.12283
+Training time elapsed in min 4.627847230434417
+Wins % in last 20 episodes = 100.0%
 Wins % breakout percentage = 89.0%
-Timesteps So Far: 28453
-Iteration took: 3.52 secs
+Timesteps So Far: 108371
+Iteration took: 3.34 secs
 ------------------------------------------------------
 
 -------------------- Iteration #19 --------------------

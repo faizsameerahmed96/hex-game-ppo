@@ -119,11 +119,10 @@ class PPO:
         Returns:
             None
         """
-        print(f"Loading model for {agent} from {model_path}")
-        if agent == self.current_agent_player:
-            self.actor.load_state_dict(torch.load(model_path))
-        else:
-            self.opponent_actor.load_state_dict(torch.load(model_path))
+        print(f"Loading model from {model_path}")
+        self.actor.load_state_dict(torch.load(f"{model_path}/actor.pth"))
+        self.critic.load_state_dict(torch.load(f"{model_path}/critic.pth"))
+
 
     def transform_observation(self, obs):
         """
