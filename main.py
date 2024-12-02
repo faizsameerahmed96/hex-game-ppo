@@ -2,6 +2,8 @@ import os
 from experiments.smart_random_1.smart_random import train_smart_random
 from experiments.smart_random_1_5.smart_random import train_smart_random_1_5
 from experiments.smart_random_2.smart_random import train_smart_random_2
+
+from experiments.full_random_sparse.full_random import train_random_sparse
 from network import PolicyValueNetwork
 from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
@@ -37,7 +39,27 @@ def main():
     # Train a more focused smart random opponent
     # train_smart_random_1_5(hyperparameters)
 
-    train_smart_random_2(hyperparameters)
+    # train_smart_random_2(hyperparameters)
+
+    hyperparameters = {
+        "episodes_per_batch": 20,
+        "max_timesteps_per_episode": 300,
+        "gamma": 0.6,
+        "n_updates_per_iteration": 15,
+        "lr": 3e-5,
+        "clip": 0.2,
+        "save_freq": 200_000,
+        "render_every_x_iterations": 100,
+        "max_num_of_episodes_to_calculate_win_percent": 20,
+        "break_after_x_continuous_win_percent": 101,
+        "how_many_consecutive_wins_to_break": 5,
+        "step_reward_multiplier": 1,
+        "opponent": RandomOpponent(),
+    }
+
+    # SPARSE TRAINING
+    train_random_sparse(hyperparameters)
+    
 
     return
 

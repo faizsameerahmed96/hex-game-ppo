@@ -276,8 +276,19 @@ Wins % breakout percentage = 89.0%
 Timesteps So Far: 172864
 Iteration took: 3.81 secs
 ------------------------------------------------------
-```
 
+-------------------- Iteration #16 --------------------
+PLAYER: player_2
+Average Episodic Length: 43.55
+Average Episodic Return: 21.15
+Average Loss: 0.10345
+Training time elapsed in min 1.4298374851544697
+Wins % in last 20 episodes = 85.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 14505
+Iteration took: 5.11 secs
+------------------------------------------------------
+```
 
 
 ## Scratch Notes
