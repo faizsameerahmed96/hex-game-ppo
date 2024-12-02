@@ -46,15 +46,24 @@ class PPO:
         self.gamma = hyperparameters.get("gamma", 0.95)
         self.clip = hyperparameters.get("clip", 0.17)
         self.save_freq = hyperparameters.get("save_freq", 10)
-        self.break_after_x_win_percent = hyperparameters.get(
-            "break_after_x_win_percent", 95
+
+        self.break_after_x_continuous_win_percent = hyperparameters.get(
+            "break_after_x_continuous_win_percent", 95
         )
-        self.seed = hyperparameters.get("seed", None)
-        self.train_against_opponent = hyperparameters.get(
-            "train_against_opponent", False
+        self.how_many_consecutive_wins_to_break = hyperparameters.get(
+            "how_many_consecutive_wins_to_break", 1
         )
         self.max_num_of_episodes_to_calculate_win_percent = hyperparameters.get(
             "max_num_of_episodes_to_calculate_win_percent", 20
+        )
+        self.wins_queue = deque(
+            maxlen=self.max_num_of_episodes_to_calculate_win_percent
+        )
+        self.wins_percent_queue = deque(maxlen=self.how_many_consecutive_wins_to_break)
+
+        self.seed = hyperparameters.get("seed", None)
+        self.train_against_opponent = hyperparameters.get(
+            "train_against_opponent", False
         )
 
         self.opponent = hyperparameters.get("opponent", None)
@@ -70,9 +79,6 @@ class PPO:
         self.current_agent_player = current_agent_player
         self.other_agent_player = (
             "player_1" if current_agent_player == "player_2" else "player_2"
-        )
-        self.wins_queue = deque(
-            maxlen=self.max_num_of_episodes_to_calculate_win_percent
         )
 
         self.start_learn_time = time.time()
@@ -201,9 +207,13 @@ class PPO:
             if iterations_so_far % self.save_freq == 0 and iterations_so_far != 0:
                 self.save_model()
 
-            if (
+            self.wins_percent_queue.append(
                 self.wins_queue.count(1) * 100 / len(self.wins_queue)
-                > self.break_after_x_win_percent
+            )
+
+            if (
+                sum(self.wins_percent_queue) / len(self.wins_percent_queue)
+                > self.break_after_x_continuous_win_percent and len(self.wins_percent_queue) >= self.how_many_consecutive_wins_to_break
             ):
                 return
 
@@ -312,6 +322,10 @@ class PPO:
                 batch_log_probs.append(log_prob)
 
             should_render = False
+
+            if self.opponent.reset:
+                # Reset the opponent after each episode
+                self.opponent.reset()
 
             if (
                 self.env.rewards[self.current_agent_player]
@@ -488,6 +502,9 @@ class PPO:
             f"Wins % in last {self.max_num_of_episodes_to_calculate_win_percent} episodes = {self.wins_queue.count(1) * 100 / len(self.wins_queue)}%",
             flush=True,
         )
+        
+        if(len(self.wins_percent_queue) > 0):
+            print(f"Wins % breakout percentage = {sum(self.wins_percent_queue) / len(self.wins_percent_queue)}%", flush=True)
         print(f"Timesteps So Far: {t_so_far}", flush=True)
         print(f"Iteration took: {delta_t} secs", flush=True)
         print(f"------------------------------------------------------", flush=True)

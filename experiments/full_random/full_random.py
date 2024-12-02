@@ -2,7 +2,6 @@ from opponents.random_opponent import RandomOpponent
 from ppo import PPO
 from ourhexgame.ourhexenv import OurHexGame
 from network import PolicyValueNetwork
-from utils import get_latest_model_for_player
 import os
 
 
@@ -14,7 +13,7 @@ def train_random(hyperparameters):
 
     hyperparameters = {
         **hyperparameters,
-        "break_after_x_win_percent": 0,  # We want to train until 95% win rate against a random opponent
+        "break_after_x_continuous_win_percent": 90,  # We want to train until 95% win rate against a random opponent
         "opponent": RandomOpponent(),
     }
 
@@ -34,6 +33,6 @@ def train_random(hyperparameters):
     print("Training against completely random opponent")
     player_1_model.learn(total_timesteps=-1)
     player_1_model.save_model(path=f"{current_directory}/checkpoints/")
-    
+
     player_2_model.learn(total_timesteps=-1)
     player_2_model.save_model(path=f"{current_directory}/checkpoints/")

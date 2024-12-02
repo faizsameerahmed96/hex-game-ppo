@@ -8,3 +8,6 @@ class OpponentInterface:
 
     def get_action(self, observation):
         raise NotImplementedError("This method should be implemented by the subclass")
+    
+    def reset(self):
+        raise NotImplementedError("This method should be implemented by the subclass")

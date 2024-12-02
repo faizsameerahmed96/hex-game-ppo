@@ -1,4 +1,5 @@
 import os
+from experiments.smart_random_1.smart_random import train_smart_random
 from network import PolicyValueNetwork
 from opponents.random_opponent import RandomOpponent
 from ourhexgame.ourhexenv import OurHexGame
@@ -16,20 +17,20 @@ def main():
         "n_updates_per_iteration": 15,
         "lr": 3e-5,
         "clip": 0.2,
-        "save_freq": 200,
-
+        "save_freq": 200_000,
         "render_every_x_iterations": 100,
-
         "max_num_of_episodes_to_calculate_win_percent": 20,
-        "break_after_x_win_percent": 101,
-
+        "break_after_x_continuous_win_percent": 101,
+        "how_many_consecutive_wins_to_break": 5,
         "train_against_opponent": False,
         "opponent": RandomOpponent(),
     }
 
-
     # Train both models for a completely random opponent
-    train_random(hyperparameters)
+    # train_random(hyperparameters)
+
+    # Train both models for a smart random opponent
+    train_smart_random(hyperparameters)
 
     return
 
@@ -38,12 +39,12 @@ def main():
     player_1_model = PPO(
         policy_class=PolicyValueNetwork,
         env=env,
-        **{**hyperparameters, "current_agent_player": "player_1"}
+        **{**hyperparameters, "current_agent_player": "player_1"},
     )
     player_2_model = PPO(
         policy_class=PolicyValueNetwork,
         env=env,
-        **{**hyperparameters, "current_agent_player": "player_2"}
+        **{**hyperparameters, "current_agent_player": "player_2"},
     )
 
     # First generalize both models on their own before starting the duel training loop
@@ -68,10 +69,14 @@ def main():
 
     while True:
         player_2_model.learn(total_timesteps=-1)
-        player_1_model.load_model_for("player_2", get_latest_model_for_player("player_2"))
+        player_1_model.load_model_for(
+            "player_2", get_latest_model_for_player("player_2")
+        )
 
         player_1_model.learn(total_timesteps=-1)
-        player_2_model.load_model_for("player_1", get_latest_model_for_player("player_1"))
+        player_2_model.load_model_for(
+            "player_1", get_latest_model_for_player("player_1")
+        )
 
         delete_old_models("./checkpoints/player_1/actor")
         delete_old_models("./checkpoints/player_1/critic")

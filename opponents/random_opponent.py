@@ -18,3 +18,6 @@ class RandomOpponent(OpponentInterface):
         board_size = len(observation["observation"])
         action = row * board_size + col
         return action
+
+    def reset(self):
+        pass

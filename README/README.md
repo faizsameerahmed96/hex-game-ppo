@@ -15,8 +15,8 @@
   - [x] Clean codebase
 - [x] Update our hex game
 - [x] Implement custom opponents
-- [ ] Train and save again radom agent
-- [ ] Train against smart agent from pa4
+- [x] Train and save again radom agent
+- [ ] Train against smart agent from pa4, maybe some distribution based on opponent player!
 - [ ] Add file logging for important updates
 - [ ] Keep a win replay buffer in order to retrain on things that already happened when we collapse to 0% win.
 - [ ] Create a function to simulate flow between 2 agents
@@ -58,8 +58,86 @@ TO ADD
         "render_every_x_iterations": 100,
   ```
 
-### Train Random
+### Default hyperparameters
+```python
+hyperparameters = {
+        "episodes_per_batch": 20,
+        "max_timesteps_per_episode": 300,
+        "gamma": 0.6,
+        "n_updates_per_iteration": 15,
+        "lr": 3e-5,
+        "clip": 0.2,
+        "save_freq": 200_000,
+
+        "render_every_x_iterations": 100,
+
+        "max_num_of_episodes_to_calculate_win_percent": 20,
+        "break_after_x_continuous_win_percent": 101,
+        "how_many_consecutive_wins_to_break": 5,
+
+        "train_against_opponent": False,
+        "opponent": RandomOpponent(),
+    }
+```
+
+
+### Full Random
 - We will train it again a completely random opponent initially. We use the following hyperparameters.
+```
+-------------------- Iteration #68 --------------------
+PLAYER: player_2
+Average Episodic Length: 64.35
+Average Episodic Return: 22.8
+Average Loss: 0.12276
+Training time elapsed in min 5.258700386683146
+Wins % in last 20 episodes = 95.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 134811
+Iteration took: 3.39 secs
+------------------------------------------------------
+
+-------------------- Iteration #119 --------------------
+PLAYER: player_1
+Average Episodic Length: 80.0
+Average Episodic Return: -3.6
+Average Loss: 0.09049
+Training time elapsed in min 9.77909373442332
+Wins % in last 20 episodes = 80.0%
+Wins % breakout percentage = 90.0%
+Timesteps So Far: 246005
+Iteration took: 3.81 secs
+------------------------------------------------------
+```
+
+### Smart Random
+- We will generate a random agent that used probability distributions to come up with common ways of winning
+
+#### Center Weight 1
+```
+-------------------- Iteration #18 --------------------
+PLAYER: player_1
+Average Episodic Length: 78.65
+Average Episodic Return: 3.1
+Average Loss: 0.11701
+Training time elapsed in min 1.2371784687042235
+Wins % in last 20 episodes = 85.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 28453
+Iteration took: 3.52 secs
+------------------------------------------------------
+
+-------------------- Iteration #19 --------------------
+PLAYER: player_2
+Average Episodic Length: 52.65
+Average Episodic Return: 28.65
+Average Loss: 0.12927
+Training time elapsed in min 1.116714564959208
+Wins % in last 20 episodes = 95.0%
+Wins % breakout percentage = 89.0%
+Timesteps So Far: 27764
+Iteration took: 2.65 secs
+------------------------------------------------------
+```
 
 
 ## Scratch Notes
