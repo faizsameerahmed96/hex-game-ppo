@@ -1,5 +1,5 @@
 import torch
-from network import PolicyValueNetwork
+from agent_group8.network import PolicyValueNetwork
 import numpy as np
 import torch.nn.functional as F
 
@@ -54,9 +54,6 @@ class G08Agent:
 
         # Sample an action
         action = torch.multinomial(action_probs, num_samples=1).item()
-
-        # Calculate the log probability for that action
-        log_prob = torch.log(action_probs[0, action])
 
         return action
 

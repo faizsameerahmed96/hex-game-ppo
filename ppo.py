@@ -46,6 +46,7 @@ class PPO:
         self.gamma = hyperparameters.get("gamma", 0.95)
         self.clip = hyperparameters.get("clip", 0.17)
         self.save_freq = hyperparameters.get("save_freq", 10)
+        self.step_reward_multiplier = hyperparameters.get("step_reward_multiplier", 1)
 
         self.break_after_x_continuous_win_percent = hyperparameters.get(
             "break_after_x_continuous_win_percent", 95
@@ -307,6 +308,9 @@ class PPO:
                 self.env.step(action)
                 observation = self.env.observe(self.current_agent_player)
                 reward = self.env.rewards[self.current_agent_player]
+
+                if reward == -1:
+                    reward = reward * self.step_reward_multiplier
 
                 # Track recent reward, action, and action log probability
                 rewards_per_episode.append(reward)
